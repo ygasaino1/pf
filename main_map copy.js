@@ -31,13 +31,15 @@ function convertToObject(response) {
 
 function fillAllDataMap(obj) {
     const data = convertToObject(obj);
-    console.log(data);
     if (data.eventName === 'tradeCreated') {
         obj = {
             age: 0,
             overlap: 1,
-            id: data.data.mint,
+            offset: 0,
             value: data.data.market_cap,
+            valueDiff: 0,
+            valueOld: 0,
+            id: data.data.mint,
             name: data.data.name,
             symbol: data.data.symbol,
             description: data.data.description,
@@ -90,97 +92,119 @@ function updateRows(allData) {
     const topData = [...allData.values()].sort((a, b) => b.value - a.value).slice(0, 50);
 
     const container = document.getElementById('container');
-    const rows = Array.from(container.children);
+    const rows = [...container.children];
     const containerTop = container.getBoundingClientRect().top;
 
     // Get current positions of all rows relative to the container
-    const positions = rows.map(row => ({
+    const oldPositions = rows.map(row => ({
         id: row.id,
         top: row.getBoundingClientRect().top - containerTop
     }));
 
     // Clear and re-add rows in sorted order to the DOM
-    const currentIds = new Set(topData.map(item => item.id));
-    rows.forEach(row => {
-        const rowId = row.id;
-        if (!currentIds.has(rowId)) {
-            row.remove();
-        }
-    });
+    // const currentIds = new Set(topData.map(item => item.id));
+    // rows.forEach(row => {
+    //     const rowId = row.id;
+    //     if (!currentIds.has(rowId)) {
+    //         row.remove();
+    //     }
+    // });
 
+    let newPositions = [];
+    container.innerHTML = '';
     topData.forEach(item => {
-        const row = document.getElementById(item.id);
-        if (row) {
-            container.appendChild(row);
-        } else {
-            const newRow = document.createElement('div');
-            newRow.className = 'row';
-            newRow.id = item.id;
-            newRow.setAttribute('data-value', item.value);
-            if (item.is_buy === true) {
-                newRow.setAttribute('is_buy', 1);
-            } else { newRow.setAttribute('is_buy', -1); }
-            newRow.innerHTML = `<div>${item.symbol}</div><div>${0}</div>`;
-            container.appendChild(newRow); // Add new rows to the bottom
-        }
+        const newRow = document.createElement('div');
+        newRow.className = 'row';
+        newRow.id = item.id;
+
+        // let oldValue = newRow.getAttribute('value');
+        // if (!oldValue) { oldValue = 0; }
+        // newRow.setAttribute('value', item.value);
+        // if (item.is_buy === true) {
+        //     newRow.setAttribute('is_buy', 1);
+        // } else { newRow.setAttribute('is_buy', -1); }
+
+
+        newRow.innerHTML = `<div>${item.symbol}</div><div>${item.value}</div>`;
+        container.appendChild(newRow); // Add new rows to the bottom
+
+        let newPos = newRow.getBoundingClientRect().top - containerTop;
+        let oldPos = oldPositions.find(pos => pos.id === item.id);
+        if (oldPos) { oldPos = oldPos.top; } else { oldPos = newPos; }
+        item.offset = oldPos - newPos;
     });
 
-    // Get new positions of all rows relative to the container
-    const newPositions = Array.from(container.children).map(row => ({
-        id: row.id,
-        top: row.getBoundingClientRect().top - containerTop
-    }));
 
-    // Apply transformations and animations
-    positions.forEach(pos => {
-        const newPos = newPositions.find(np => np.id === pos.id);
-        if (newPos) {
-            const row = document.getElementById(pos.id);
-            const offset = pos.top - newPos.top;
 
-            if (offset !== 0) {
-                row.style.transition = 'none';
-                row.style.transform = `translateY(${offset}px)`;
-                requestAnimationFrame(() => {
-                    row.style.transition = 'transform 0.5s, background-color 1s ease-out';
-                    row.style.transform = '';
-                });
-            }
-            else {
-                // row.style.transition = 'background-color 1s ease-out';
-                // row.style.transform = '';
-            }
-        }
-    });
+
+
+
 
     // Update content and apply background color animation
     topData.forEach(item => {
         const row = document.getElementById(item.id);
-        const oldValue = parseFloat(row.getAttribute('data-value'));
-        const newValue = item.value;
+        row.style.transition = 'none';
 
-        row.setAttribute('data-value', newValue);
-        row.innerHTML = `<div>${item.symbol}</div><div>${newValue}</div>`;
+        // if (item.is_buy === true) { //newValue > oldValue
+        //     allDataMap.get(item.id).is_buy = null;
+        //     row.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Green
+        // } else if (item.is_buy === false) { //newValue < oldValue
+        //     allDataMap.get(item.id).is_buy = null;
+        //     row.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Red
+        // } else if (item.is_buy === null) { //newValue < oldValue
+        //     row.style.backgroundColor = 'transparent';
+        // }
 
-        row.style.transition = 'transform 0.5s';
-        if (item.is_buy === true) { //newValue > oldValue
-            allDataMap.get(item.id).is_buy = null;
-            row.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Green
-        } else if (item.is_buy === false) { //newValue < oldValue
-            allDataMap.get(item.id).is_buy = null;
-            row.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Red
+
+        if (item.valueDiff > 0) { //newValue < oldValue
+            row.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Red
+        } else if (item.valueDiff < 0) { //newValue < oldValue
+            row.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
         }
 
-        requestAnimationFrame(() => {
-            row.style.transition = 'transform 0.5s, background-color 1s ease-out';
+
+
+
+        // let op = oldPositions.find(pos => pos.id === item.id);
+        // let np = newPositions.find(pos => pos.id === item.id);
+        // if (op && np) {
+        //     const offset = op.top - np.top;
+        //     console.log(offset);
+        //     if (offset !== 0) { row.style.transform = `translateY(${offset}px)`; }
+
+        // }
+
+        if (item.offset !== 0) {
+            // console.log(item, row);
+            row.style.transform = `translateY(${item.offset}px)`;
+        }
+
+        // requestAnimationFrame(() => {
+        // });
+    });
+
+
+    requestAnimationFrame(() => {
+
+        topData.forEach(item => {
+            const row = document.getElementById(item.id);
+            row.offsetHeight;
+
+            row.style.transition = 'transform 0.5s, background-color 2s ease-out';
             row.style.backgroundColor = 'transparent';
-        });
+            row.style.transform = 'translateY(0px)';
+        })
     });
 }
 
+let debug = false;
 setInterval(() => {
+    if (debug) { return; }
     allDataMap.forEach(obj => {
         obj.age += 1;
+        obj.valueDiff = obj.value - obj.valueOld;
+        console.log(obj.value, obj.valueOld);
+        obj.valueOld = obj.value;
 
         // Remove if age exceeds 60
         if (obj.age > 60) {
@@ -189,4 +213,4 @@ setInterval(() => {
     });
     // console.log(allDataMap);
     updateRows(allDataMap);
-}, 500);
+}, 1000);

@@ -30,21 +30,23 @@ function convertToObject(response) {
 }
 
 function fillAllDataMap(obj) {
-    const data = convertToObject(obj);
-    if (data.eventName === 'tradeCreated') {
+    const parsed = convertToObject(obj);
+    if (parsed.eventName === 'tradeCreated') {
         obj = {
             age: 0,
-            overlap: 1,
+            trades: 1,
             offset: 0,
-            value: data.data.market_cap,
+            // value: data.data.market_cap,
+            value: parsed.data.usd_market_cap,
             valueDiff: 0,
             valueOld: 0,
-            id: data.data.mint,
-            name: data.data.name,
-            symbol: data.data.symbol,
-            description: data.data.description,
-            image_uri: data.data.image_uri,
-            is_buy: data.data.is_buy
+            id: parsed.data.mint,
+            name: parsed.data.name,
+            symbol: parsed.data.symbol,
+            description: parsed.data.description,
+            image_uri: parsed.data.image_uri,
+            is_buy: parsed.data.is_buy,
+            created: parsed.data.created_timestamp
         };
     } else { return; }
     // Check if the object with the same id already exists in the pool
@@ -53,7 +55,8 @@ function fillAllDataMap(obj) {
     if (existingObj) {
         // If it exists, update its value and increment the overlap property
         existingObj.value = obj.value;
-        existingObj.overlap += 1;
+        existingObj.trades += 1;
+        existingObj.age = 0;
     } else {
         // If it does not exist, add it to the pool
         allDataMap.set(obj.id, { ...obj });
@@ -88,6 +91,8 @@ socket.addEventListener('message', function (event) {
 
 // Function to update and animate rows
 function updateRows(allData) {
+    let now = Date.now();
+
     // Sort data by value
     const topData = [...allData.values()].sort((a, b) => b.value - a.value).slice(0, 50);
 
@@ -101,41 +106,50 @@ function updateRows(allData) {
         top: row.getBoundingClientRect().top - containerTop
     }));
 
+
+    //////////////////////////////////////////////////////////////////////////////////////ERROR IS HERE//////////////////////
     // Clear and re-add rows in sorted order to the DOM
-    // const currentIds = new Set(topData.map(item => item.id));
-    // rows.forEach(row => {
-    //     const rowId = row.id;
-    //     if (!currentIds.has(rowId)) {
-    //         row.remove();
-    //     }
-    // });
-
-    let newPositions = [];
-    container.innerHTML = '';
-    topData.forEach(item => {
-        const newRow = document.createElement('div');
-        newRow.className = 'row';
-        newRow.id = item.id;
-
-        // let oldValue = newRow.getAttribute('value');
-        // if (!oldValue) { oldValue = 0; }
-        // newRow.setAttribute('value', item.value);
-        // if (item.is_buy === true) {
-        //     newRow.setAttribute('is_buy', 1);
-        // } else { newRow.setAttribute('is_buy', -1); }
-
-
-        newRow.innerHTML = `<div>${item.symbol}</div><div>${item.value}</div>`;
-        container.appendChild(newRow); // Add new rows to the bottom
-
-        let newPos = newRow.getBoundingClientRect().top - containerTop;
-        let oldPos = oldPositions.find(pos => pos.id === item.id);
-        if (oldPos) { oldPos = oldPos.top; } else { oldPos = newPos; }
-        item.offset = oldPos - newPos;
+    const currentIds = new Set(topData.map(item => item.id));
+    rows.forEach(row => {
+        if (!currentIds.has(row.id)) {
+            row.remove();
+        }
     });
 
 
+    let newPositions = [];
+    // container.innerHTML = '';
 
+    // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+    topData.forEach(item => {
+        let row = document.getElementById(item.id);
+        if (row) {
+            // row.style.transition = 'none';
+            row.innerHTML = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${toK(item.value)}</div>`;
+            container.appendChild(row);
+        } else {
+            row = document.createElement('a');
+            row.target = "_blank";
+            row.href = `https://pump.fun/${item.id}`;
+            // row.style.transition = 'none';
+            row.className = 'row';
+            row.id = item.id;
+            row.innerHTML = `<div>${item.symbol}</div><div>${toK(item.value)}</div>`;
+
+            container.appendChild(row); // Add new rows to the bottom
+        }
+    });
+    topData.forEach(item => {
+
+        let row = document.getElementById(item.id);
+
+        let newPos = row.getBoundingClientRect().top - containerTop;
+        let oldPos = oldPositions.find(pos => pos.id === item.id);
+        if (oldPos) { oldPos = oldPos.top; } else { oldPos = newPos; }
+        // console.log(oldPos, ' | ', newPos);
+        item.offset = oldPos - newPos;
+
+    });
 
 
 
@@ -145,42 +159,16 @@ function updateRows(allData) {
         const row = document.getElementById(item.id);
         row.style.transition = 'none';
 
-        // if (item.is_buy === true) { //newValue > oldValue
-        //     allDataMap.get(item.id).is_buy = null;
-        //     row.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Green
-        // } else if (item.is_buy === false) { //newValue < oldValue
-        //     allDataMap.get(item.id).is_buy = null;
-        //     row.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Red
-        // } else if (item.is_buy === null) { //newValue < oldValue
-        //     row.style.backgroundColor = 'transparent';
-        // }
-
-
         if (item.valueDiff > 0) { //newValue < oldValue
             row.style.backgroundColor = 'rgba(0, 255, 0, 0.5)'; // Red
         } else if (item.valueDiff < 0) { //newValue < oldValue
             row.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
         }
 
-
-
-
-        // let op = oldPositions.find(pos => pos.id === item.id);
-        // let np = newPositions.find(pos => pos.id === item.id);
-        // if (op && np) {
-        //     const offset = op.top - np.top;
-        //     console.log(offset);
-        //     if (offset !== 0) { row.style.transform = `translateY(${offset}px)`; }
-
-        // }
-
         if (item.offset !== 0) {
             // console.log(item, row);
             row.style.transform = `translateY(${item.offset}px)`;
         }
-
-        // requestAnimationFrame(() => {
-        // });
     });
 
 
@@ -188,11 +176,13 @@ function updateRows(allData) {
 
         topData.forEach(item => {
             const row = document.getElementById(item.id);
-            row.offsetHeight;
+            if (row) {
+                row.offsetHeight;
 
-            row.style.transition = 'transform 0.5s, background-color 2s ease-out';
-            row.style.backgroundColor = 'transparent';
-            row.style.transform = 'translateY(0px)';
+                row.style.transition = 'transform 0.5s, background-color 3s ease-out';
+                row.style.backgroundColor = 'var(--bg-color)';
+                row.style.transform = 'translateY(0px)';
+            }
         })
     });
 }
@@ -203,14 +193,42 @@ setInterval(() => {
     allDataMap.forEach(obj => {
         obj.age += 1;
         obj.valueDiff = obj.value - obj.valueOld;
-        console.log(obj.value, obj.valueOld);
+        //console.log(obj.value, obj.valueOld);
         obj.valueOld = obj.value;
 
         // Remove if age exceeds 60
-        if (obj.age > 60) {
+        if (obj.age > 10) {
             allDataMap.delete(obj.id);
         }
     });
     // console.log(allDataMap);
     updateRows(allDataMap);
-}, 1000);
+}, 3000);
+
+
+function toK(number) {
+    if (number >= 1000000) {
+        // Format number for millions
+        return (number / 1000000).toFixed(1) + 'M';
+    } else {
+        // Format number less than 1000 in thousands
+        return (number / 1000).toFixed(1) + 'k';
+    }
+}
+
+function toDate(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days >= 1) {
+        return days + 'd';
+    } else if (hours >= 1) {
+        return hours + 'h';
+    } else if (minutes >= 1) {
+        return minutes + 'm';
+    } else {
+        return seconds + 's';
+    }
+}

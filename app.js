@@ -200,7 +200,7 @@ setInterval(() => {
         obj.valueOld = obj.value;
 
         // Remove if age exceeds 60
-        if (obj.age > 10) {
+        if (obj.age > 20) {
             allDataMap.delete(obj.id);
         }
     });

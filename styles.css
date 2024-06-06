@@ -38,13 +38,18 @@ a {
 #container {
     position: relative;
     top: 20vh;
-    width: 40%;
+    width: 90%;
     margin: auto;
     /* margin-left: 50%; */
     border: 1px solid #ccc;
     padding: 10px;
     padding-top: 5px;
     background-color: var(--cl2);
+}
+@media screen and (min-width: 768px) {
+    #container {
+        width: 50%; /* or any desired width for larger screens */
+    }
 }
 
 .row {

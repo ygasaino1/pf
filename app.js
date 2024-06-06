@@ -1,7 +1,9 @@
 let allDataMap = new Map(); // Use Map for better performance
 
 // WebSocket setup
-const socket = new WebSocket('wss://client-api-2-74b1891ee9f9.herokuapp.com/socket.io/?EIO=4&transport=websocket');
+// let url = 'wss://client-api-2-74b1891ee9f9.herokuapp.com/socket.io/?EIO=4&transport=websocket'
+let url = 'wss://frontend-api.pump.fun/socket.io/?EIO=4&transport=websocket'
+const socket = new WebSocket(url);
 socket.onopen = function (event) {
     console.log('Connected to WebSocket');
     socket.send('40');

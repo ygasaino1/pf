@@ -124,10 +124,11 @@ function updateRows(allData) {
 
     // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     topData.forEach(item => {
+        let inner = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${toK(item.value)}</div>`;
         let row = document.getElementById(item.id);
         if (row) {
             // row.style.transition = 'none';
-            row.innerHTML = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${toK(item.value)}</div>`;
+            row.innerHTML = inner;
             container.appendChild(row);
         } else {
             row = document.createElement('a');
@@ -136,7 +137,7 @@ function updateRows(allData) {
             // row.style.transition = 'none';
             row.className = 'row';
             row.id = item.id;
-            row.innerHTML = `<div>${item.symbol}</div><div>${toK(item.value)}</div>`;
+            row.innerHTML = inner;
 
             container.appendChild(row); // Add new rows to the bottom
         }

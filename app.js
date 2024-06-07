@@ -129,8 +129,12 @@ function updateRows(allData) {
     // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     topData.forEach(item => {
         let isComplete = `${item.complete ? '✱' : ''}`;
-        let isIdle = `${item.isIdle ? 'style="text-decoration: line-through;' : ''}`;
+        let isIdle = `${item.isIdle ? 'style="text-decoration: line-through;"' : ''}`;
         let inner = `<div ${isIdle}>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${isComplete}${toK(item.value)}</div>`;
+        if(item.isIdle)
+            {
+                let temp = inner;
+            }
         let row = document.getElementById(item.id);
         if (row) {
             // row.style.transition = 'none';
@@ -210,7 +214,6 @@ setInterval(() => {
     allDataMap.forEach(obj => {
         obj.age += 1;
         obj.valueDiff = obj.value - obj.valueOld;
-        //console.log(obj.value, obj.valueOld);
         obj.valueOld = obj.value;
 
         // Remove if age exceeds 60

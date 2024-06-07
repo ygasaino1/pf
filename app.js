@@ -48,7 +48,8 @@ function fillAllDataMap(obj) {
             description: parsed.data.description,
             image_uri: parsed.data.image_uri,
             is_buy: parsed.data.is_buy,
-            created: parsed.data.created_timestamp
+            created: parsed.data.created_timestamp,
+            complete: parsed.data.complete
         };
     } else { return; }
     // Check if the object with the same id already exists in the pool
@@ -59,6 +60,7 @@ function fillAllDataMap(obj) {
         existingObj.value = obj.value;
         existingObj.trades += 1;
         existingObj.age = 0;
+        existingObj.complete = obj.complete;
     } else {
         // If it does not exist, add it to the pool
         allDataMap.set(obj.id, { ...obj });
@@ -124,7 +126,8 @@ function updateRows(allData) {
 
     // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     topData.forEach(item => {
-        let inner = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${toK(item.value)}</div>`;
+        let isComplete = `${item.complete ? '✱' : ''}`;
+        let inner = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${isComplete}${toK(item.value)}</div>`;
         let row = document.getElementById(item.id);
         if (row) {
             // row.style.transition = 'none';
@@ -211,14 +214,14 @@ setInterval(() => {
     updateRows(allDataMap);
 }, interval);
 const container = document.querySelector("#container");
-container.onmouseenter = function(e){  //mouseenter and mouseleave, do not bubble. thats what i learned here
-    if (e.target===this) {
+container.onmouseenter = function (e) {  //mouseenter and mouseleave, do not bubble. thats what i learned here
+    if (e.target === this) {
         pause = true;
         // console.log(pause);
     }
 };
-container.onmouseleave = function(e){
-    if (e.target===this) {
+container.onmouseleave = function (e) {
+    if (e.target === this) {
         pause = false;
         // console.log(pause);
     }

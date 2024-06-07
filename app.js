@@ -190,9 +190,12 @@ function updateRows(allData) {
     });
 }
 
-let debug = false;
+let pause = false;
+let lifetime = 60; // in seconds
+let interval = 500;
+let lifetime_ = lifetime * 1000 / interval;
 setInterval(() => {
-    if (debug) { return; }
+    if (pause) { return; }
     allDataMap.forEach(obj => {
         obj.age += 1;
         obj.valueDiff = obj.value - obj.valueOld;
@@ -200,13 +203,26 @@ setInterval(() => {
         obj.valueOld = obj.value;
 
         // Remove if age exceeds 60
-        if (obj.age > 20) {
+        if (obj.age > lifetime_) {
             allDataMap.delete(obj.id);
         }
     });
     // console.log(allDataMap);
     updateRows(allDataMap);
-}, 3000);
+}, interval);
+const container = document.querySelector("#container");
+container.onmouseenter = function(e){  //mouseenter and mouseleave, do not bubble. thats what i learned here
+    if (e.target===this) {
+        pause = true;
+        // console.log(pause);
+    }
+};
+container.onmouseleave = function(e){
+    if (e.target===this) {
+        pause = false;
+        // console.log(pause);
+    }
+};
 
 
 function toK(number) {

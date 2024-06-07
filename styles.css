@@ -1,7 +1,8 @@
 :root {
     --bg-color2: #aea78b;
     --txt-color: #ffffff;
-    --bg-color: #b076f1;
+    --bg-color3: #b076f1;
+    --bg-color: #161616;
     --cl2: #cea4cf;
 }
 
@@ -14,10 +15,10 @@ body {
     color: var(--txt-color);
 
     background-color: var(--bg-color);
-    opacity: 1;
-    background-image: radial-gradient(#ffa9d8 1.25px, transparent 1.25px), radial-gradient(#ffa9d8 1.25px, #b076f1 1.25px);
+    /* opacity: 1;
+    background-image: radial-gradient(var(--cl2) 1.25px, transparent 1.25px), radial-gradient(var(--cl2) 1.25px, var(--bg-color) 1.25px);
     background-size: 50px 50px;
-    background-position: 0 0, 25px 25px;
+    background-position: 0 0, 25px 25px; */
 }
 
 body::-webkit-scrollbar {
@@ -30,9 +31,9 @@ a {
 }
 
 #bg-img {
-        width: 100%;
-        position: fixed;
-        top: 0px;
+    width: 100%;
+    position: fixed;
+    top: 0px;
 }
 
 #container {
@@ -41,14 +42,18 @@ a {
     width: 90%;
     margin: auto;
     /* margin-left: 50%; */
-    border: 1px solid #ffffff;
+    /* border: 1px solid #ffffff; */
     padding: 10px;
     padding-top: 5px;
     /* background-color: var(--cl2); */
 }
+
 @media screen and (min-width: 768px) {
     #container {
-        width: 50%; /* or any desired width for larger screens */
+        width: 20%;
+        /* or any desired width for larger screens */
+        margin-left: 10%;
+
     }
 }
 
@@ -61,7 +66,7 @@ a {
     margin: 5px 0;
 }
 
-#footer{
+#footer {
     position: relative;
     top: 20vh;
     height: 100px;

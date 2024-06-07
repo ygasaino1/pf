@@ -49,7 +49,8 @@ function fillAllDataMap(obj) {
             image_uri: parsed.data.image_uri,
             is_buy: parsed.data.is_buy,
             created: parsed.data.created_timestamp,
-            complete: parsed.data.complete
+            complete: parsed.data.complete,
+            isIdle: false
         };
     } else { return; }
     // Check if the object with the same id already exists in the pool
@@ -61,6 +62,7 @@ function fillAllDataMap(obj) {
         existingObj.trades += 1;
         existingObj.age = 0;
         existingObj.complete = obj.complete;
+        existingObj.isIdle = false;
     } else {
         // If it does not exist, add it to the pool
         allDataMap.set(obj.id, { ...obj });
@@ -127,7 +129,8 @@ function updateRows(allData) {
     // console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     topData.forEach(item => {
         let isComplete = `${item.complete ? '✱' : ''}`;
-        let inner = `<div>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${isComplete}${toK(item.value)}</div>`;
+        let isIdle = `${item.isIdle ? 'style="text-decoration: line-through;' : ''}`;
+        let inner = `<div ${isIdle}>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${isComplete}${toK(item.value)}</div>`;
         let row = document.getElementById(item.id);
         if (row) {
             // row.style.transition = 'none';
@@ -200,6 +203,11 @@ let lifetime_ = lifetime * 1000 / interval;
 setInterval(() => {
     if (pause) { return; }
     allDataMap.forEach(obj => {
+        if (obj.isIdle) {
+            allDataMap.delete(obj.id);
+        }
+    });
+    allDataMap.forEach(obj => {
         obj.age += 1;
         obj.valueDiff = obj.value - obj.valueOld;
         //console.log(obj.value, obj.valueOld);
@@ -207,7 +215,7 @@ setInterval(() => {
 
         // Remove if age exceeds 60
         if (obj.age > lifetime_) {
-            allDataMap.delete(obj.id);
+            obj.isIdle = true;
         }
     });
     // console.log(allDataMap);

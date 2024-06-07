@@ -192,7 +192,7 @@ function updateRows(allData) {
 
 let pause = false;
 let lifetime = 60; // in seconds
-let interval = 500;
+let interval = 1000;
 let lifetime_ = lifetime * 1000 / interval;
 setInterval(() => {
     if (pause) { return; }

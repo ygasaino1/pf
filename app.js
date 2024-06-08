@@ -35,6 +35,7 @@ function fillAllDataMap(obj) {
     const parsed = convertToObject(obj);
     if (parsed.eventName === 'tradeCreated') {
         obj = {
+            raw: parsed.data,
             age: 0,
             trades: 1,
             offset: 0,
@@ -52,7 +53,10 @@ function fillAllDataMap(obj) {
             complete: parsed.data.complete,
             isIdle: false
         };
-    } else { return; }
+    } else {
+        // console.log(parsed.data); 
+        return;
+    }
     // Check if the object with the same id already exists in the pool
     let existingObj = allDataMap.get(obj.id);
 
@@ -63,6 +67,7 @@ function fillAllDataMap(obj) {
         existingObj.complete = obj.complete;
         existingObj.age = 0;
         existingObj.isIdle = false;
+        existingObj.raw = obj.raw;
     } else {
         // If it does not exist, add it to the pool
         allDataMap.set(obj.id, { ...obj });
@@ -151,13 +156,18 @@ function updateRows(allData) {
             container.appendChild(row); // Add new rows to the bottom
         }
 
-        row.onmouseenter = function (e) {
-            if (e.target === this) {
-                let this_uri = allDataMap.get(row.id).image_uri;
-                // console.log(this_uri);
-                loadMyImage(this_uri);
-            }
-        }
+        // row.onmouseenter = function (e) {
+        //     if (e.target === this) {
+        //         let this_uri = allDataMap.get(row.id).image_uri;
+        //         // console.log(this_uri);
+        //         loadMyImage(this_uri);
+        //     }
+        // }
+
+        row.onclick = function (e) {
+            console.log(item.raw);
+        };
+
     });
     topData.forEach(item => {
 

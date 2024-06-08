@@ -269,33 +269,17 @@ function toDate(ms) {
     }
 }
 
-let imageLoadTimeout;
-let lastSrc = "";
-const img = document.getElementById('pp-img');
-const loadingIndicator = document.querySelector('.loading-indicator');
+// let imageLoadTimeout;
+// let lastSrc = "";
+// const img = document.getElementById('pp-img');
+// const loadingIndicator = document.querySelector('.loading-indicator');
 
-function loadMyImage(src) {
-    img.src = '';
-    img.style.opacity = '0%';
-    // If a new source is requested within the 3 seconds, clear the timeout
-    // clearTimeout(imageLoadTimeout);
-    lastSrc = src;
-
-    // Show the loading indicator
-
-    loadingIndicator.style.display = 'block';
-
-    // Set a new timeout
-    // imageLoadTimeout = setTimeout(() => {
-    //     // Hide the loading indicator
-    //     loadingIndicator.style.display = 'none';
-
-    //     // Set the new image source
-
-    //     img.src = lastSrc;
-    //     img.style.opacity = '100%';
-    // }, 3000);
-}
+// function loadMyImage(src) {
+//     img.src = '';
+//     img.style.opacity = '0%';
+//     lastSrc = src;
+//     loadingIndicator.style.display = 'block';
+// }
 
 const container = document.querySelector("#container");
 container.onmouseenter = function (e) {  //mouseenter and mouseleave, do not bubble. thats what i learned here
@@ -309,10 +293,10 @@ container.onmouseleave = function (e) {
         pause = false;
         // console.log(pause);
 
-        
-        loadingIndicator.style.display = 'none';
-        // Set the new image source
-        img.src = lastSrc;
-        img.style.opacity = '100%';
+
+        // loadingIndicator.style.display = 'none';
+        // // Set the new image source
+        // img.src = lastSrc;
+        // img.style.opacity = '100%';
     }
 };

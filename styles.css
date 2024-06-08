@@ -42,9 +42,14 @@ a {
     top: 0px;
 }
 
+#header {
+    height: 20vh;
+    /* background-color: yellow; */
+}
+
 #main {
     position: relative;
-    top: 20vh;
+    /* top: 20vh; */
     display: flex;
     flex-direction: row;
     margin: auto;
@@ -70,6 +75,8 @@ a {
 }
 
 @media screen and (min-width: 768px) {
+    #header {}
+
     #container {
         width: 20%;
         /* or any desired width for larger screens */
@@ -78,9 +85,9 @@ a {
     }
 
     #info {
-        display: block;
+        display: grid;
         position: sticky;
-        background-color: yellow;
+        /* background-color: yellow; */
         width: 50%;
         height: 70vh;
         /* margin-bottom: 0px; */
@@ -91,7 +98,51 @@ a {
         padding-top: 12px;
         border: 1px solid #ddd;
         background-color: var(--bg-color);
+    }
 
+    #info>#pp {
+        position: absolute;
+        background-color: #1c1c1c;
+        height: 30vh;
+        width: 30vh;
+        border-radius: 50%;
+        overflow: hidden;
+        justify-self: center;
+        align-self: center;
+
+    }
+
+    #info>#pp>img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        opacity: 0;
+    }
+
+    .loading-indicator {
+        background: transparent;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: #ffffff;
+        animation: spin 3s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+        z-index: 1;
+        display: none;
+        box-sizing: border-box;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 }
 
@@ -106,7 +157,7 @@ a {
 
 #footer {
     position: relative;
-    top: 20vh;
-    height: 100px;
+    /* top: 20vh; */
+    height: 10vh;
     /* background-color: yellow; */
 }

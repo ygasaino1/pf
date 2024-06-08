@@ -60,8 +60,8 @@ function fillAllDataMap(obj) {
         // If it exists, update its value and increment the overlap property
         existingObj.value = obj.value;
         existingObj.trades += 1;
-        existingObj.age = 0;
         existingObj.complete = obj.complete;
+        existingObj.age = 0;
         existingObj.isIdle = false;
     } else {
         // If it does not exist, add it to the pool
@@ -131,10 +131,9 @@ function updateRows(allData) {
         let isComplete = `${item.complete ? '✱' : ''}`;
         let isIdle = `${item.isIdle ? 'style="text-decoration: line-through;"' : ''}`;
         let inner = `<div ${isIdle}>${item.symbol + ' [' + toDate(now - item.created) + '][' + item.trades + '₪]'}</div><div>${isComplete}${toK(item.value)}</div>`;
-        if(item.isIdle)
-            {
-                let temp = inner;
-            }
+        if (item.isIdle) {
+            let temp = inner;
+        }
         let row = document.getElementById(item.id);
         if (row) {
             // row.style.transition = 'none';
@@ -150,6 +149,14 @@ function updateRows(allData) {
             row.innerHTML = inner;
 
             container.appendChild(row); // Add new rows to the bottom
+        }
+
+        row.onmouseenter = function (e) {
+            if (e.target === this) {
+                let this_uri = allDataMap.get(row.id).image_uri;
+                // console.log(this_uri);
+                loadMyImage(this_uri);
+            }
         }
     });
     topData.forEach(item => {
@@ -203,40 +210,36 @@ function updateRows(allData) {
 let pause = false;
 let lifetime = 60; // in seconds
 let interval = 1000;
-let lifetime_ = lifetime * 1000 / interval;
+let lifetime_ = Math.ceil(lifetime * 1000 / interval);
 setInterval(() => {
     if (pause) { return; }
-    allDataMap.forEach(obj => {
-        if (obj.isIdle) {
-            allDataMap.delete(obj.id);
-        }
-    });
+
+    // allDataMap.forEach(obj => {
+
+    // });
+
     allDataMap.forEach(obj => {
         obj.age += 1;
         obj.valueDiff = obj.value - obj.valueOld;
         obj.valueOld = obj.value;
 
-        // Remove if age exceeds 60
-        if (obj.age > lifetime_) {
+        if (obj.isIdle && obj.age > lifetime_) {
+            allDataMap.delete(obj.id);
+        }
+
+        // Remove if age exceeds 60secs
+        else if (obj.age > lifetime_) {
             obj.isIdle = true;
+            let extraInterval = lifetime_ - Math.ceil(obj.trades * 2 * 1000 / interval);
+            if (extraInterval < 0) { extraInterval = 0; }
+            obj.age = extraInterval;
+            // console.log(`[${obj.id}]: ${obj.age}`);
         }
     });
     // console.log(allDataMap);
     updateRows(allDataMap);
 }, interval);
-const container = document.querySelector("#container");
-container.onmouseenter = function (e) {  //mouseenter and mouseleave, do not bubble. thats what i learned here
-    if (e.target === this) {
-        pause = true;
-        // console.log(pause);
-    }
-};
-container.onmouseleave = function (e) {
-    if (e.target === this) {
-        pause = false;
-        // console.log(pause);
-    }
-};
+
 
 
 function toK(number) {
@@ -265,3 +268,51 @@ function toDate(ms) {
         return seconds + 's';
     }
 }
+
+let imageLoadTimeout;
+let lastSrc = "";
+const img = document.getElementById('pp-img');
+const loadingIndicator = document.querySelector('.loading-indicator');
+
+function loadMyImage(src) {
+    img.src = '';
+    img.style.opacity = '0%';
+    // If a new source is requested within the 3 seconds, clear the timeout
+    // clearTimeout(imageLoadTimeout);
+    lastSrc = src;
+
+    // Show the loading indicator
+
+    loadingIndicator.style.display = 'block';
+
+    // Set a new timeout
+    // imageLoadTimeout = setTimeout(() => {
+    //     // Hide the loading indicator
+    //     loadingIndicator.style.display = 'none';
+
+    //     // Set the new image source
+
+    //     img.src = lastSrc;
+    //     img.style.opacity = '100%';
+    // }, 3000);
+}
+
+const container = document.querySelector("#container");
+container.onmouseenter = function (e) {  //mouseenter and mouseleave, do not bubble. thats what i learned here
+    if (e.target === this) {
+        pause = true;
+        // console.log(pause);
+    }
+};
+container.onmouseleave = function (e) {
+    if (e.target === this) {
+        pause = false;
+        // console.log(pause);
+
+        
+        loadingIndicator.style.display = 'none';
+        // Set the new image source
+        img.src = lastSrc;
+        img.style.opacity = '100%';
+    }
+};

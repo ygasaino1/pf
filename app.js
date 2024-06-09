@@ -3,11 +3,37 @@ let allDataMap = new Map(); // Use Map for better performance
 // WebSocket setup
 // let url = 'wss://client-api-2-74b1891ee9f9.herokuapp.com/socket.io/?EIO=4&transport=websocket'
 let url = 'wss://frontend-api.pump.fun/socket.io/?EIO=4&transport=websocket'
-const socket = new WebSocket(url);
-socket.onopen = function (event) {
-    console.log('Connected to WebSocket');
-    socket.send('40');
-};
+
+let socket;
+let socketAttempt = 0;
+let socketMaxAttempt = 5;
+
+function pumpConnect() {
+    if (socketAttempt > socketMaxAttempt) { return; }
+    socket = new WebSocket(url);
+
+    socket.onopen = function (e) {
+        socketAttempt = 0;
+        console.log('Connected to WebSocket');
+        socket.send('40');
+    };
+    socket.onclose = function (e) {
+        socketAttempt += 1;
+        console.log(`Connection to WebSocket Failed: Attempt ${socketAttempt}`);
+        setTimeout(pumpConnect, 1000);
+    }
+    socket.onerror = function (e) {
+        socket.close();
+    }
+    socket.onmessage = function (e) {
+        if (e.data === "2") { socket.send("3") }
+        else {
+            fillAllDataMap(event.data);
+        };
+    }
+}
+pumpConnect();
+
 
 function convertToObject(response) {
     const i1 = response.indexOf('[');
@@ -73,14 +99,6 @@ function fillAllDataMap(obj) {
         allDataMap.set(obj.id, { ...obj });
     }
 }
-
-
-socket.addEventListener('message', function (event) {
-    if (event.data === "2") { socket.send("3") }
-    else {
-        fillAllDataMap(event.data);
-    };
-});
 
 
 // Function to render rows

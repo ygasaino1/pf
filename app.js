@@ -23,6 +23,7 @@ function pumpConnect() {
         setTimeout(pumpConnect, 1000);
     }
     socket.onerror = function (e) {
+        console.error(e);
         socket.close();
     }
     socket.onmessage = function (e) {
